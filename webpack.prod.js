@@ -1,6 +1,8 @@
 'use strict'
 
 const path = require('path');
+const MiniCssExtractPlugin=require('mini-css-extract-plugin')
+const OptimizeCSSAssetsPlugin=require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
     entry: {
@@ -9,7 +11,7 @@ module.exports = {
     },
     output: {
         path:path.join(__dirname, 'dist'),
-        filename: '[name].js'
+        filename: '[name]_[chunkhash:8].js'
     },
     mode: 'production',
     module: {
@@ -21,14 +23,14 @@ module.exports = {
             {
                 test:/.css$/,
                 use: [
-                    'style-loader',
+                    MiniCssExtractPlugin.loader,
                     'css-loader'
                 ]
             },
             {
                 test: /.less$/,
                 use: [
-                    'style-loader',
+                    MiniCssExtractPlugin.loader,
                     'css-loader',
                     'less-loader'
                 ]
@@ -37,13 +39,22 @@ module.exports = {
                 test: /.{png|jpg|gif|jpeg}$/,
                 use: [
                     {
-                        loader: 'url-loader',
+                        loader: 'file-loader',
                         options: {
-                            limit: 10240
+                            name: '[name]_[hash:8].[ext]'
                         }
                     }
                 ]
             }
         ]
-    }
+    },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename:'[name]_[contenthash:8].css'
+        }),
+        new OptimizeCSSAssetsPlugin({
+            assetNameRegExp: /\.css$/g,
+            cssProcessor:require('cssnano')
+        })
+    ]
 };
